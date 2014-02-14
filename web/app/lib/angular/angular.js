@@ -4672,8 +4672,8 @@ function $CacheFactoryProvider() {
  * Adding via the $templateCache service:
  * 
  * <pre>
- * var myApp = angular.module('myApp', []);
- * myApp.run(function($templateCache) {
+ * var plannerApp = angular.module('plannerApp', []);
+ * plannerApp.run(function($templateCache) {
  *   $templateCache.put('templateId.html', 'This is the content of the template');
  * });
  * </pre>
@@ -12507,7 +12507,7 @@ function adjustMatchers(matchers) {
  * Here is what a secure configuration for this scenario might look like:
  *
  * <pre class="prettyprint">
- *    angular.module('myApp', []).config(function($sceDelegateProvider) {
+ *    angular.module('plannerApp', []).config(function($sceDelegateProvider) {
  *      $sceDelegateProvider.resourceUrlWhitelist([
  *        // Allow same origin resource loads.
  *        'self',
@@ -12976,7 +12976,7 @@ function $SceDelegateProvider() {
  * @example
 <example module="mySceApp" deps="angular-sanitize.js">
 <file name="index.html">
-  <div ng-controller="myAppController as myCtrl">
+  <div ng-controller="plannerAppController as myCtrl">
     <i ng-bind-html="myCtrl.explicitlyTrustedHtml" id="explicitlyTrustedHtml"></i><br><br>
     <b>User comments</b><br>
     By default, HTML that isn't explicitly trusted (e.g. Alice's comment) is sanitized when
@@ -12995,7 +12995,7 @@ function $SceDelegateProvider() {
 <file name="script.js">
   var mySceApp = angular.module('mySceApp', ['ngSanitize']);
 
-  mySceApp.controller("myAppController", function myAppController($http, $templateCache, $sce) {
+  mySceApp.controller("plannerAppController", function plannerAppController($http, $templateCache, $sce) {
     var self = this;
     $http.get("test_data.json", {cache: $templateCache}).success(function(userComments) {
       self.userComments = userComments;
@@ -13047,7 +13047,7 @@ function $SceDelegateProvider() {
  * That said, here's how you can completely disable SCE:
  *
  * <pre class="prettyprint">
- *   angular.module('myAppWithSceDisabledmyApp', []).config(function($sceProvider) {
+ *   angular.module('plannerAppWithSceDisabledplannerApp', []).config(function($sceProvider) {
  *     // Completely disable SCE.  For demonstration purposes only!
  *     // Do not use in new projects.
  *     $sceProvider.enabled(false);
