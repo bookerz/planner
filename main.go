@@ -42,7 +42,7 @@ func main() {
 
 	defer db.Close()
 
-	http.FileServer(http.Dir("static/"))
+	http.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir("./web/app/"))))
 
 	r := mux.NewRouter()
 	r.HandleFunc("/data", DataHandler)
