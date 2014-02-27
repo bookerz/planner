@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -34,6 +35,8 @@ func main() {
 		log.Fatalf("No config available bailing out")
 	}
 
+	rand.Seed(42)
+
 	db, err := sql.Open("postgres", fmt.Sprintf("user=%v sslmode=disable", config.DBUser))
 
 	if err != nil {
@@ -59,7 +62,7 @@ type Data struct {
 func DataHandler(w http.ResponseWriter, r *http.Request) {
 
 	d := Data{
-		Id:    10,
+		Id:    rand.Int(),
 		Value: "Some data",
 	}
 
