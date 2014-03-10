@@ -17,10 +17,9 @@ func (e *Employee) Load(tx *sql.Tx) error {
 	switch {
 	case err == sql.ErrNoRows:
 		log.Printf("[EMPLOYEE]: No user with that ID.")
-		return err
 	case err != nil:
 		log.Printf("[EMPLOYEE]: Unknown error reading from database: '%v'", err)
 	}
 
-	return nil
+	return err
 }
