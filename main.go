@@ -96,9 +96,3 @@ func EmployeeHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars ma
 
 	return nil
 }
-
-func DoRollback(tx *sql.Tx, prefix string) {
-	if err := tx.Rollback(); err != nil {
-		log.Printf(prefix+": unable to rollback transaction, error: '%v'", err)
-	}
-}
