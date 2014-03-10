@@ -102,6 +102,7 @@ func EmployeeHandler(w http.ResponseWriter, r *http.Request, vars map[string]str
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(b)
 }
 
