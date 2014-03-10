@@ -9,8 +9,8 @@ import (
 )
 
 // Must adapt to HttpRouter library?
-func RunInTransaction(f func(w http.ResponseWriter, r *http.Request, tx *sql.Tx) error) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+func RunInTransaction(f func(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars map[string]string) error) func(w http.ResponseWriter, r *http.Request, vars map[string]string) {
+	return func(w http.ResponseWriter, r *http.Request, vars map[string]string) {
 
 		tx, err := db.Begin()
 
@@ -20,21 +20,20 @@ func RunInTransaction(f func(w http.ResponseWriter, r *http.Request, tx *sql.Tx)
 			return
 		}
 
-		err = f(w, r, tx)
+		err = f(w, r, tx, vars)
 
 		if err != nil {
-			err2 := tx.Rollback()
-			if err2 != nil {
-				log.Printf("TRANSACTION: Unable to rollback transaction, error: {%v}", err2)
+			if err := tx.Rollback(); err != nil {
+				log.Printf("[TRANSACTION]: Unable to rollback transaction, error: '%v'", err)
 			}
-			log.Printf("TRANSACTION: Rolling back transaction, error: {%v}", err)
+			log.Printf("[TRANSACTION]: Rolling back transaction, error: '%v'", err)
 			return
 		}
 
 		err = tx.Commit()
 
 		if err != nil {
-			log.Printf("TRANSACTION: Unable to commit transaction, error: {%v}", err)
+			log.Printf("[TRANSACTION]: Unable to commit transaction, error: '%v'", err)
 		}
 	}
 }
