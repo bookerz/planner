@@ -6,11 +6,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	//"io/ioutil"
 	_ "github.com/lib/pq"
+	"io"
+	"io/ioutil"
 	. "launchpad.net/gocheck"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func Test(t *testing.T) { TestingT(t) }
@@ -53,7 +55,7 @@ func (s *EmployeeSuite) TearDownSuite(c *C) {
 	}
 }
 
-func (s *EmployeeSuite) TestEployeeBasicGET(c *C) {
+func (s *EmployeeSuite) TestEmployeeBasicGET(c *C) {
 
 	client := &http.Client{}
 
@@ -62,7 +64,7 @@ func (s *EmployeeSuite) TestEployeeBasicGET(c *C) {
 	resp, err := client.Do(req)
 
 	c.Assert(err, IsNil)
-	c.Assert(resp.StatusCode, Equals, 200, Commentf("Expected status 200 for basic GET employee", 200, resp.StatusCode))
+	c.Assert(resp.StatusCode, Equals, http.StatusOK, Commentf("Expected status 200 for basic GET employee", 200, resp.StatusCode))
 
 	payload := make(map[string]interface{})
 
@@ -71,6 +73,45 @@ func (s *EmployeeSuite) TestEployeeBasicGET(c *C) {
 	c.Assert(payload["Id"], Equals, float64(42))
 	c.Assert(payload["FirstName"], Equals, "Firstname_42")
 	c.Assert(payload["LastName"], Equals, "Lastname_42")
+}
+
+func (s *EmployeeSuite) TestEmployeeBasicGETNoNoEmployee(c *C) {
+
+	client := &http.Client{}
+
+	uri := getBaseURI() + "/employee/43"
+	req, err := http.NewRequest("GET", uri, nil)
+	resp, err := client.Do(req)
+
+	c.Assert(err, IsNil)
+	c.Assert(resp.StatusCode, Equals, http.StatusNotFound, Commentf("Expected status 200 for basic GET employee", 200, resp.StatusCode))
+
+	b, err := ioutil.ReadAll(resp.Body)
+
+	c.Assert(err, IsNil)
+	c.Assert(strings.Contains(resp.Header["Content-Type"][0], "text/plain"), Equals, true)
+	c.Assert(strings.TrimSpace(string(b)), Equals, "Employee not found")
+}
+
+// Benchmarks
+
+func (s *EmployeeSuite) BenchmarkEmployeeBasicGET(c *C) {
+
+	c.StopTimer()
+
+	client := &http.Client{}
+	uri := getBaseURI() + "/employee/42"
+	req, _ := http.NewRequest("GET", uri, nil)
+
+	c.StartTimer()
+
+	for i := 0; i < c.N; i++ {
+		resp, err := client.Do(req)
+		c.Assert(err, IsNil)
+		c.Assert(resp.StatusCode, Equals, http.StatusOK, Commentf("Expected status 200 for basic GET employee", 200, resp.StatusCode))
+		io.Copy(ioutil.Discard, resp.Body)
+		resp.Body.Close()
+	}
 }
 
 func getBaseURI() string {
