@@ -71,11 +71,15 @@ func EmployeeHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars ma
 		Id: id,
 	}
 
-	err = e.Load(tx)
-
-	if err != nil {
-		log.Printf("[EMPLOYEE]: Unable to load data from database, error: '%v'", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err = e.Load(tx); err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			log.Printf("[EMPLOYEE]: Unable to to find employee with id '%v', error: '%v'", id, err)
+			http.Error(w, "Employee not found", http.StatusNotFound)
+		default:
+			log.Printf("[EMPLOYEE]: Unable to load data from database, error: '%v'", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		return err
 	}
 
