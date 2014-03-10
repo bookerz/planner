@@ -4,11 +4,36 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"runtime"
 )
 
 type Config struct {
-	DBUser   string
-	DBPasswd string
+	DBUser         string
+	DBPasswd       string
+	DBMaxIdleConns int
+	DBMaxOpenConns int
+	Concurrency    int
+}
+
+func (c *Config) getMaxIdleConns() int {
+	if c.DBMaxIdleConns == 0 {
+		return 10
+	}
+	return c.DBMaxIdleConns
+}
+
+func (c *Config) getMaxOpenConns() int {
+	if c.DBMaxOpenConns == 0 {
+		return 10
+	}
+	return c.DBMaxOpenConns
+}
+
+func (c *Config) getConcurrency() int {
+	if c.Concurrency == 0 {
+		return runtime.NumCPU()
+	}
+	return c.Concurrency
 }
 
 func LoadConfig(file string) (*Config, error) {

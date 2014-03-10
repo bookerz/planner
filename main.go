@@ -9,6 +9,8 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	_ "github.com/lib/pq"
+
+	"runtime"
 )
 
 var configFile string
@@ -35,13 +37,17 @@ func main() {
 		log.Fatalf("No config available bailing out")
 	}
 
+	runtime.GOMAXPROCS(config.getConcurrency())
+
 	db, err = sql.Open("postgres", fmt.Sprintf("user=%v sslmode=disable", config.DBUser))
 
 	if err != nil {
 		log.Fatalf("Unable to connect to the database, reason -> %v\n", err)
 	}
-
 	defer db.Close()
+
+	db.SetMaxOpenConns(config.getMaxOpenConns())
+	db.SetMaxIdleConns(config.getMaxIdleConns())
 
 	http.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir("./web/app/"))))
 
