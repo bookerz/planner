@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -29,6 +31,31 @@ func (e *Employee) Load(tx *sql.Tx) error {
 	}
 
 	return err
+}
+
+func (e *Employee) Delete(tx *sql.Tx) error {
+	result, err := tx.Exec("DELETE FROM employee WHERE id = $1", e.Id)
+
+	if err != nil {
+		log.Printf("[EMPLOYEE]: Unable to delete employee '%v', error: '%v'", e.Id, err)
+		return err
+	}
+
+	cnt, err := result.RowsAffected()
+
+	if err != nil {
+		log.Printf("[EMPLOYEE]: Unable to get rows affected count, error: '%v'", err)
+		return err
+	}
+
+	if cnt != 1 {
+		log.Printf("Deleted an invalid number of employees '%v'", cnt)
+		return errors.New(fmt.Sprintf("invalid number of employees deleted, '%v'", cnt))
+	}
+
+	log.Printf("Deleted '%v' employees", cnt)
+
+	return nil
 }
 
 func (e *EmployeeList) Load(tx *sql.Tx) error {
@@ -90,6 +117,35 @@ func EmployeeHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars ma
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(b)
+
+	return nil
+}
+
+func EmployeeDeleteHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars map[string]string) error {
+
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		log.Printf("[EMPLOYEE]: Unable to format input parameter. error: '%v'", err)
+		http.Error(w, "The id have to be a number", http.StatusBadRequest)
+		return err
+	}
+
+	e := &Employee{
+		Id: id,
+	}
+
+	if err := e.Delete(tx); err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			log.Printf("[EMPLOYEE]: Unable to find employee with id '%v', error: '%v'", id, err)
+			http.Error(w, "Employee not found", http.StatusNotFound)
+		default:
+			log.Printf("[EMPLOYEE]: Unable to load data from database, error: '%v'", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return err
+	}
 
 	return nil
 }

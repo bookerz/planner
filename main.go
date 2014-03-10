@@ -46,6 +46,7 @@ func main() {
 	http.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir("./web/app/"))))
 
 	r := httprouter.New()
+	r.DELETE("/data/employee/:id", RunInTransaction(EmployeeDeleteHandler))
 	r.GET("/data/employee/:id", RunInTransaction(EmployeeHandler))
 	r.GET("/data/employees", RunInTransaction(EmployeeListHandler))
 
