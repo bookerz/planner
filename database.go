@@ -8,7 +8,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Must adapt to HttpRouter library?
 func RunInTransaction(f func(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars map[string]string) error) func(w http.ResponseWriter, r *http.Request, vars map[string]string) {
 	return func(w http.ResponseWriter, r *http.Request, vars map[string]string) {
 
