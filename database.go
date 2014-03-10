@@ -8,7 +8,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func RunInTransaction(f func(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars map[string]string) error) func(w http.ResponseWriter, r *http.Request, vars map[string]string) {
+func RunInTransaction(f func(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[string]string) error) func(w http.ResponseWriter, r *http.Request, vars map[string]string) {
 	return func(w http.ResponseWriter, r *http.Request, vars map[string]string) {
 
 		tx, err := db.Begin()
@@ -19,7 +19,7 @@ func RunInTransaction(f func(w http.ResponseWriter, r *http.Request, tx *sql.Tx,
 			return
 		}
 
-		err = f(w, r, tx, vars)
+		err = f(w, r, &internalTx{tx}, vars)
 
 		if err != nil {
 			if err := tx.Rollback(); err != nil {
@@ -35,4 +35,18 @@ func RunInTransaction(f func(w http.ResponseWriter, r *http.Request, tx *sql.Tx,
 			log.Printf("[TRANSACTION]: Unable to commit transaction, error: '%v'", err)
 		}
 	}
+}
+
+type Transaction interface {
+	Commit() error
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	Prepare(query string) (*sql.Stmt, error)
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+	Rollback() error
+	Stmt(stmt *sql.Stmt) *sql.Stmt
+}
+
+type internalTx struct {
+	*sql.Tx
 }

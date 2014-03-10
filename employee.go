@@ -20,7 +20,7 @@ type EmployeeList struct {
 	Employees []*Employee
 }
 
-func (e *Employee) Load(tx *sql.Tx) error {
+func (e *Employee) Load(tx Transaction) error {
 	err := tx.QueryRow("SELECT first_name,last_name FROM employee WHERE id=$1", e.Id).Scan(&e.FirstName, &e.LastName)
 
 	switch {
@@ -33,7 +33,7 @@ func (e *Employee) Load(tx *sql.Tx) error {
 	return err
 }
 
-func (e *Employee) Delete(tx *sql.Tx) error {
+func (e *Employee) Delete(tx Transaction) error {
 	result, err := tx.Exec("DELETE FROM employee WHERE id = $1", e.Id)
 
 	if err != nil {
@@ -58,7 +58,7 @@ func (e *Employee) Delete(tx *sql.Tx) error {
 	return nil
 }
 
-func (e *Employee) Save(tx *sql.Tx) error {
+func (e *Employee) Save(tx Transaction) error {
 	result, err := tx.Exec("UPDATE employee (first_name,last_name) = ($1,$2) WHERE id = $3", e.FirstName, e.LastName, e.Id)
 
 	if err != nil {
@@ -83,7 +83,7 @@ func (e *Employee) Save(tx *sql.Tx) error {
 	return nil
 }
 
-func (e *Employee) Insert(tx *sql.Tx) error {
+func (e *Employee) Insert(tx Transaction) error {
 	err := tx.QueryRow("INSERT INTO employee (id,first_name,last_name) = (nextval('employee_seq'),$1,$2) returning id", e.FirstName, e.LastName).Scan(e.Id)
 
 	if err != nil {
@@ -94,7 +94,7 @@ func (e *Employee) Insert(tx *sql.Tx) error {
 	return nil
 }
 
-func (e *EmployeeList) Load(tx *sql.Tx) error {
+func (e *EmployeeList) Load(tx Transaction) error {
 	rows, err := tx.Query("SELECT id,first_name,last_name FROM employee")
 
 	if err != nil {
@@ -117,7 +117,7 @@ func (e *EmployeeList) Load(tx *sql.Tx) error {
 	return nil
 }
 
-func EmployeeSaveHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars map[string]string) error {
+func EmployeeSaveHandler(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[string]string) error {
 
 	id, err := strconv.Atoi(vars["id"])
 
@@ -153,7 +153,7 @@ func EmployeeSaveHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, var
 	return nil
 }
 
-func EmployeeCreateHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars map[string]string) error {
+func EmployeeCreateHandler(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[string]string) error {
 
 	e := &Employee{}
 
@@ -172,7 +172,7 @@ func EmployeeCreateHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, v
 	return nil
 }
 
-func EmployeeHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars map[string]string) error {
+func EmployeeHandler(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[string]string) error {
 
 	id, err := strconv.Atoi(vars["id"])
 
@@ -212,7 +212,7 @@ func EmployeeHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars ma
 	return nil
 }
 
-func EmployeeDeleteHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars map[string]string) error {
+func EmployeeDeleteHandler(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[string]string) error {
 
 	id, err := strconv.Atoi(vars["id"])
 
@@ -241,7 +241,7 @@ func EmployeeDeleteHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, v
 	return nil
 }
 
-func EmployeeListHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars map[string]string) error {
+func EmployeeListHandler(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[string]string) error {
 
 	e := &EmployeeList{}
 
