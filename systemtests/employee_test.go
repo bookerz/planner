@@ -4,7 +4,7 @@ import (
 	"testing"
 	//"bytes"
 	"database/sql"
-	//"encoding/json"
+	"encoding/json"
 	"fmt"
 	//"io/ioutil"
 	_ "github.com/lib/pq"
@@ -63,6 +63,14 @@ func (s *EmployeeSuite) TestEployeeBasicGET(c *C) {
 
 	c.Assert(err, IsNil)
 	c.Assert(resp.StatusCode, Equals, 200, Commentf("Expected status 200 for basic GET employee", 200, resp.StatusCode))
+
+	payload := make(map[string]interface{})
+
+	json.NewDecoder(resp.Body).Decode(&payload)
+
+	c.Assert(payload["Id"], Equals, float64(42))
+	c.Assert(payload["FirstName"], Equals, "Firstname_42")
+	c.Assert(payload["LastName"], Equals, "Lastname_42")
 }
 
 func getBaseURI() string {
