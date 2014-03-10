@@ -74,7 +74,7 @@ func EmployeeHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars ma
 	err = e.Load(tx)
 
 	if err != nil {
-		log.Printf("[EMPLOYEE]: Unable to data from database, error: '%v'", err)
+		log.Printf("[EMPLOYEE]: Unable to load data from database, error: '%v'", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err
 	}
