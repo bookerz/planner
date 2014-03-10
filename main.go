@@ -51,7 +51,7 @@ func main() {
 	http.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir("./web/app/"))))
 
 	r := httprouter.New()
-	r.GET("/data/employee/;id", EmployeeHandler)
+	r.GET("/data/employee/:id", EmployeeHandler)
 	http.Handle("/", r)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
