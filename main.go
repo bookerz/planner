@@ -8,12 +8,15 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
 	_ "github.com/lib/pq"
 )
 
 var configFile string
+
+var db *sql.DB
 
 func init() {
 	flag.StringVar(&configFile, "config", "", "a configuration file is needed")
@@ -37,7 +40,7 @@ func main() {
 
 	rand.Seed(42)
 
-	db, err := sql.Open("postgres", fmt.Sprintf("user=%v sslmode=disable", config.DBUser))
+	db, err = sql.Open("postgres", fmt.Sprintf("user=%v sslmode=disable", config.DBUser))
 
 	if err != nil {
 		log.Fatalf("Unable to connect to the database, reason -> %v\n", err)
@@ -47,26 +50,63 @@ func main() {
 
 	http.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir("./web/app/"))))
 
-	r := mux.NewRouter()
-	r.HandleFunc("/data", DataHandler)
+	r := httprouter.New()
+	r.GET("/data/employee/;id", EmployeeHandler)
 	http.Handle("/", r)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-type Data struct {
-	Id    int
-	Value string
-}
+func EmployeeHandler(w http.ResponseWriter, r *http.Request, vars map[string]string) {
 
-func DataHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(vars["id"])
 
-	d := Data{
-		Id:    rand.Int(),
-		Value: "Some data",
+	if err != nil {
+		log.Printf("[EMPLOYEE]: Unable to format input parameter. error: '%v'", err)
+		http.Error(w, "The id have to be a number", http.StatusBadRequest)
+		return
 	}
 
-	b, _ := json.Marshal(d)
+	e := &Employee{
+		Id: id,
+	}
+
+	tx, err := db.Begin()
+
+	if err != nil {
+		log.Printf("[EMPLOYEE]: Unable to create database transaction. error: '%v'", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	err = e.Load(tx)
+
+	if err != nil {
+		DoRollback(tx, "[EMPLOYEE]")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	b, err := json.Marshal(e)
+
+	if err != nil {
+		DoRollback(tx, "[EMPLOYEE]")
+		log.Printf("[EMPLOYEE]: Unable to marshal json data, error: '%v'", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Printf("[EMPLOYEE]: Unable to commit transaction. error: '%v'", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 
 	w.Write(b)
+}
+
+func DoRollback(tx *sql.Tx, prefix string) {
+	if err := tx.Rollback(); err != nil {
+		log.Printf(prefix+": unable to rollback transaction, error: '%v'", err)
+	}
 }
