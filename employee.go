@@ -14,6 +14,10 @@ type Employee struct {
 	LastName  string
 }
 
+type EmployeeList struct {
+	Employees []*Employee
+}
+
 func (e *Employee) Load(tx *sql.Tx) error {
 	err := tx.QueryRow("SELECT first_name,last_name FROM employee WHERE id=$1", e.Id).Scan(&e.FirstName, &e.LastName)
 
@@ -21,10 +25,33 @@ func (e *Employee) Load(tx *sql.Tx) error {
 	case err == sql.ErrNoRows:
 		log.Printf("[EMPLOYEE]: No user with that ID.")
 	case err != nil:
-		log.Printf("[EMPLOYEE]: Unknown error reading from database: '%v'", err)
+		log.Printf("[EMPLOYEE]: Unknown error reading from database, error: '%v'", err)
 	}
 
 	return err
+}
+
+func (e *EmployeeList) Load(tx *sql.Tx) error {
+	rows, err := tx.Query("SELECT id,first_name,last_name FROM employee")
+
+	if err != nil {
+		log.Printf("[EMPLOYEE]: Unknown error reading from database, error: '%v'", err)
+		return err
+	}
+
+	for rows.Next() {
+		employee := Employee{}
+		if err := rows.Scan(&employee.Id, &employee.FirstName, &employee.LastName); err != nil {
+			log.Printf("[EMPLOYEE]: error reading data from database, error: ", err)
+		}
+		e.Employees = append(e.Employees, &employee)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
 }
 
 func EmployeeHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars map[string]string) error {
@@ -41,15 +68,39 @@ func EmployeeHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars ma
 		Id: id,
 	}
 
-	if err = e.Load(tx); err != nil {
+	if err := e.Load(tx); err != nil {
 		switch {
 		case err == sql.ErrNoRows:
-			log.Printf("[EMPLOYEE]: Unable to to find employee with id '%v', error: '%v'", id, err)
+			log.Printf("[EMPLOYEE]: Unable to find employee with id '%v', error: '%v'", id, err)
 			http.Error(w, "Employee not found", http.StatusNotFound)
 		default:
 			log.Printf("[EMPLOYEE]: Unable to load data from database, error: '%v'", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
+		return err
+	}
+
+	b, err := json.Marshal(e)
+
+	if err != nil {
+		log.Printf("[EMPLOYEE]: Unable to marshal json data, error: '%v'", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return err
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(b)
+
+	return nil
+}
+
+func EmployeeListHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars map[string]string) error {
+
+	e := &EmployeeList{}
+
+	if err := e.Load(tx); err != nil {
+		log.Printf("[EMPLOYEE]: Unable to load data from database, error: '%v'", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err
 	}
 

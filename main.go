@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -36,8 +35,6 @@ func main() {
 		log.Fatalf("No config available bailing out")
 	}
 
-	rand.Seed(42)
-
 	db, err = sql.Open("postgres", fmt.Sprintf("user=%v sslmode=disable", config.DBUser))
 
 	if err != nil {
@@ -50,6 +47,8 @@ func main() {
 
 	r := httprouter.New()
 	r.GET("/data/employee/:id", RunInTransaction(EmployeeHandler))
+	r.GET("/data/employees", RunInTransaction(EmployeeListHandler))
+
 	http.Handle("/", r)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
