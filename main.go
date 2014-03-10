@@ -46,6 +46,9 @@ func main() {
 	http.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir("./web/app/"))))
 
 	r := httprouter.New()
+
+	r.POST("/data/employee", RunInTransaction(EmployeeCreateHandler))
+	r.POST("/data/employee/:id", RunInTransaction(EmployeeSaveHandler))
 	r.DELETE("/data/employee/:id", RunInTransaction(EmployeeDeleteHandler))
 	r.GET("/data/employee/:id", RunInTransaction(EmployeeHandler))
 	r.GET("/data/employees", RunInTransaction(EmployeeListHandler))

@@ -58,6 +58,42 @@ func (e *Employee) Delete(tx *sql.Tx) error {
 	return nil
 }
 
+func (e *Employee) Save(tx *sql.Tx) error {
+	result, err := tx.Exec("UPDATE employee (first_name,last_name) = ($1,$2) WHERE id = $3", e.FirstName, e.LastName, e.Id)
+
+	if err != nil {
+		log.Printf("[EMPLOYEE]: Unable to save employee '%v', error: '%v'", e.Id, err)
+		return err
+	}
+
+	cnt, err := result.RowsAffected()
+
+	if err != nil {
+		log.Printf("[EMPLOYEE]: Unable to get rows affected count, error: '%v'", err)
+		return err
+	}
+
+	if cnt != 1 {
+		log.Printf("Updated an invalid number of employees '%v'", cnt)
+		return errors.New(fmt.Sprintf("invalid number of employees updated, '%v'", cnt))
+	}
+
+	log.Printf("Updated '%v' employees", cnt)
+
+	return nil
+}
+
+func (e *Employee) Insert(tx *sql.Tx) error {
+	err := tx.QueryRow("INSERT INTO employee (id,first_name,last_name) = (nextval('employee_seq'),$1,$2) returning id", e.FirstName, e.LastName).Scan(e.Id)
+
+	if err != nil {
+		log.Printf("[EMPLOYEE]: Unable to save employee '%v', error: '%v'", e.Id, err)
+		return err
+	}
+
+	return nil
+}
+
 func (e *EmployeeList) Load(tx *sql.Tx) error {
 	rows, err := tx.Query("SELECT id,first_name,last_name FROM employee")
 
@@ -76,6 +112,61 @@ func (e *EmployeeList) Load(tx *sql.Tx) error {
 
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
+	}
+
+	return nil
+}
+
+func EmployeeSaveHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars map[string]string) error {
+
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		log.Printf("[EMPLOYEE]: Unable to format input parameter. error: '%v'", err)
+		http.Error(w, "The id have to be a number", http.StatusBadRequest)
+		return err
+	}
+
+	e := &Employee{}
+
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(e); err != nil {
+		log.Printf("[EMPLOYEE]: Unable to read json, error: '%v'", err)
+		return err
+	}
+
+	// Disregard any id that may be in the payload
+	e.Id = id
+
+	if err := e.Save(tx); err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			log.Printf("[EMPLOYEE]: Unable to find employee with id '%v', error: '%v'", id, err)
+			http.Error(w, "Employee not found", http.StatusNotFound)
+		default:
+			log.Printf("[EMPLOYEE]: Unable to load data from database, error: '%v'", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return err
+	}
+
+	return nil
+}
+
+func EmployeeCreateHandler(w http.ResponseWriter, r *http.Request, tx *sql.Tx, vars map[string]string) error {
+
+	e := &Employee{}
+
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(e); err != nil {
+		log.Printf("[EMPLOYEE]: Unable to read json, error: '%v'", err)
+		return err
+	}
+
+	if err := e.Insert(tx); err != nil {
+		log.Printf("[EMPLOYEE]: Unable to create employee, error: '%v'", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
 	}
 
 	return nil
