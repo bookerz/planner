@@ -132,6 +132,7 @@ func EmployeeSaveHandler(w http.ResponseWriter, r *http.Request, tx Transaction,
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(e); err != nil {
 		log.Printf("[EMPLOYEE]: Unable to read json, error: '%v'", err)
+		http.Error(w, "Bad json, "+err.Error(), http.StatusBadRequest)
 		return err
 	}
 
