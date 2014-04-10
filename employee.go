@@ -59,7 +59,7 @@ func (e *Employee) Delete(tx Transaction) error {
 }
 
 func (e *Employee) Save(tx Transaction) error {
-	result, err := tx.Exec("UPDATE employee (first_name,last_name) = ($1,$2) WHERE id = $3", e.FirstName, e.LastName, e.Id)
+	result, err := tx.Exec("UPDATE employee SET first_name=$1,last_name=$2 WHERE id = $3", e.FirstName, e.LastName, e.Id)
 
 	if err != nil {
 		log.Printf("[EMPLOYEE]: Unable to save employee '%v', error: '%v'", e.Id, err)
