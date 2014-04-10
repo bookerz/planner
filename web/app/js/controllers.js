@@ -8,4 +8,7 @@ angular.module('plannerApp.controllers', []).
   }])
   .controller('MyCtrl2', [function() {
 
+  }])
+  .controller('MyCtrl3', [function() {
+
   }]);
