@@ -11,6 +11,10 @@ import (
 func RunInTransaction(f func(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[string]string) error) func(w http.ResponseWriter, r *http.Request, vars map[string]string) {
 	return func(w http.ResponseWriter, r *http.Request, vars map[string]string) {
 
+		if log.V(INFO) {
+			defer log.Flush()
+		}
+
 		tx, err := db.Begin()
 
 		if err != nil {

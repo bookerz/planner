@@ -17,7 +17,7 @@ inotifywait -m --timefmt '%d/%m/%y %H:%M' --format '%T %w %f' \
        	make
        	make test
        	killall planner
-       	./target/planner -v=0 -log_dir="/tmp/planner_logs" -config=./scripts/planner.cfg &
+       	./target/planner -v=2 -log_dir="/tmp/planner_logs" -config=./scripts/planner.cfg &
 	fi
        
 done

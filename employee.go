@@ -53,7 +53,7 @@ func (e *Employee) Delete(tx Transaction) error {
 		return errors.New(fmt.Sprintf("invalid number of employees deleted, '%v'", cnt))
 	}
 
-	log.Infof("Deleted '%v' employees", cnt)
+	log.V(INFO).Infof("Deleted '%v' employees", cnt)
 
 	return nil
 }
@@ -78,7 +78,7 @@ func (e *Employee) Save(tx Transaction) error {
 		return errors.New(fmt.Sprintf("invalid number of employees updated, '%v'", cnt))
 	}
 
-	log.Infof("Updated '%v' employees", cnt)
+	log.V(INFO).Infof("Updated '%v' employees", cnt)
 
 	return nil
 }
@@ -244,6 +244,10 @@ func EmployeeDeleteHandler(w http.ResponseWriter, r *http.Request, tx Transactio
 }
 
 func EmployeeListHandler(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[string]string) error {
+
+	limit := r.FormValue("limit")
+
+	log.V(INFO).Infof("Limit = %v", limit)
 
 	e := &EmployeeList{}
 

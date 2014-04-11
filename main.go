@@ -13,6 +13,13 @@ import (
 	"runtime"
 )
 
+const (
+	INFO  = 2
+	WARN  = 1
+	ERROR = 0
+	FATAL = -1
+)
+
 var configFile string
 
 var db *sql.DB
@@ -24,6 +31,10 @@ func init() {
 func main() {
 
 	flag.Parse()
+
+	if log.V(INFO) {
+		log.V(INFO).Infoln("Flushing the log on every request")
+	}
 
 	if configFile == "" {
 		log.Errorln("An example config file can look like this:")
