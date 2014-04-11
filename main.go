@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"log"
+	log "github.com/golang/glog"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -26,8 +26,8 @@ func main() {
 	flag.Parse()
 
 	if configFile == "" {
-		log.Println("An example config file can look like this:")
-		log.Printf("\n%v\n", ExampleConfig())
+		log.Errorln("An example config file can look like this:")
+		log.Errorf("\n%v\n", ExampleConfig())
 		log.Fatalln("You have to supply a config file '~/proj :> planner -config=/path/to/config.json'")
 	}
 
@@ -47,7 +47,9 @@ func main() {
 	defer db.Close()
 
 	db.SetMaxOpenConns(config.getMaxOpenConns())
+	log.Infof("Setting max open db connections to %v\n", config.getMaxOpenConns())
 	db.SetMaxIdleConns(config.getMaxIdleConns())
+	log.Infof("Setting max idle db connections to %v\n", config.getMaxIdleConns())
 
 	http.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir("./web/app/"))))
 
@@ -61,5 +63,9 @@ func main() {
 
 	http.Handle("/", r)
 
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatalf("Can't start web server, err = %v\n", err.Error())
+	}
+
+	log.Flush()
 }

@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	log "github.com/golang/glog"
 	"io/ioutil"
-	"log"
 	"runtime"
 )
 
@@ -40,7 +40,7 @@ func LoadConfig(file string) (*Config, error) {
 	b, err := ioutil.ReadFile(file)
 
 	if err != nil {
-		log.Printf("Unable to load config file '%v', reason -> %v\n", configFile, err)
+		log.Warningf("Unable to load config file '%v', reason -> %v\n", configFile, err)
 		return nil, err
 	}
 
@@ -49,7 +49,7 @@ func LoadConfig(file string) (*Config, error) {
 	err = json.Unmarshal(b, c)
 
 	if err != nil {
-		log.Printf("Unable to parse config file '%v'\n", err)
+		log.Warningf("Unable to parse config file '%v'\n", err)
 		return nil, err
 	}
 

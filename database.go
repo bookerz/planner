@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"log"
+	log "github.com/golang/glog"
 	"net/http"
 
 	_ "github.com/lib/pq"
@@ -14,7 +14,7 @@ func RunInTransaction(f func(w http.ResponseWriter, r *http.Request, tx Transact
 		tx, err := db.Begin()
 
 		if err != nil {
-			log.Printf("[TRANSACTION]: Unable to create database transaction. error: '%v'", err)
+			log.Warningf("[TRANSACTION]: Unable to create database transaction. error: '%v'", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -23,16 +23,16 @@ func RunInTransaction(f func(w http.ResponseWriter, r *http.Request, tx Transact
 
 		if err != nil {
 			if err := tx.Rollback(); err != nil {
-				log.Printf("[TRANSACTION]: Unable to rollback transaction, error: '%v'", err)
+				log.Warningf("[TRANSACTION]: Unable to rollback transaction, error: '%v'", err)
 			}
-			log.Printf("[TRANSACTION]: Rolling back transaction, error: '%v'", err)
+			log.Warningf("[TRANSACTION]: Rolling back transaction, error: '%v'", err)
 			return
 		}
 
 		err = tx.Commit()
 
 		if err != nil {
-			log.Printf("[TRANSACTION]: Unable to commit transaction, error: '%v'", err)
+			log.Warningf("[TRANSACTION]: Unable to commit transaction, error: '%v'", err)
 		}
 	}
 }
