@@ -94,8 +94,8 @@ func (e *Employee) Insert(tx Transaction) error {
 	return nil
 }
 
-func (e *EmployeeList) Load(tx Transaction) error {
-	rows, err := tx.Query("SELECT id,first_name,last_name FROM employee")
+func (e *EmployeeList) Load(tx Transaction, offset, limit int) error {
+	rows, err := tx.Query("SELECT id,first_name,last_name FROM employee offset $1 limit $2", offset, limit)
 
 	if err != nil {
 		log.Warningf("[EMPLOYEE]: Unknown error reading from database, error: '%v'", err)
@@ -245,13 +245,14 @@ func EmployeeDeleteHandler(w http.ResponseWriter, r *http.Request, tx Transactio
 
 func EmployeeListHandler(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[string]string) error {
 
-	limit := r.FormValue("limit")
+	offset := getInt(r, "offset", 0)
+	limit := getInt(r, "limit", 10)
 
-	log.V(INFO).Infof("Limit = %v", limit)
+	log.V(INFO).Infof("Offset = %v, Limit = %v", offset, limit)
 
 	e := &EmployeeList{}
 
-	if err := e.Load(tx); err != nil {
+	if err := e.Load(tx, offset, limit); err != nil {
 		log.Warningf("[EMPLOYEE]: Unable to load data from database, error: '%v'", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err
