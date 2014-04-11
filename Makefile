@@ -1,3 +1,9 @@
+compile:
+	go build -o target/planner .
+
+test:
+	go test -v
+
 build:
 	mkdir -p target
 	go get github.com/golang/glog
