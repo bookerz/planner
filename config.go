@@ -13,6 +13,7 @@ type Config struct {
 	DBMaxIdleConns int
 	DBMaxOpenConns int
 	Concurrency    int
+	WebRoot        string
 }
 
 func (c *Config) getMaxIdleConns() int {
@@ -34,6 +35,10 @@ func (c *Config) getConcurrency() int {
 		return runtime.NumCPU()
 	}
 	return c.Concurrency
+}
+
+func (c *Config) getWebRoot() string {
+	return c.WebRoot
 }
 
 func LoadConfig(file string) (*Config, error) {
@@ -58,8 +63,12 @@ func LoadConfig(file string) (*Config, error) {
 
 func ExampleConfig() string {
 	cfg := Config{
-		DBUser:   "dbuser",
-		DBPasswd: "secret",
+		DBUser:         "dbuser",
+		DBPasswd:       "secret",
+		DBMaxIdleConns: 10,
+		DBMaxOpenConns: 10,
+		Concurrency:    10,
+		WebRoot:        "./web/app/",
 	}
 
 	b, _ := json.MarshalIndent(cfg, "", " ")
