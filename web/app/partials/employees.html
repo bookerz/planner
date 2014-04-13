@@ -1,0 +1,8 @@
+<div>
+	<p>This is the partial for employees</p>
+  	<ul class="employees">
+         <li ng-repeat="employee in employees.Employees | filter:query" class="thumbnail">
+     	 <a href="#/employee/{{employee.Id}}">{{employee.FirstName}} {{employee.LastName}}</a>
+     	</li>
+  	</ul>
+</div>

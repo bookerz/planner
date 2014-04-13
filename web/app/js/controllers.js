@@ -9,6 +9,6 @@ angular.module('plannerApp.controllers', []).
   .controller('MyCtrl2', [function() {
 
   }])
-  .controller('MyCtrl3', [function() {
-
+  .controller('EmployeeCtrl', ['$scope', 'Employees', function($scope, Employees) {
+  	$scope.employees = Employees.query();
   }]);
