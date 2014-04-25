@@ -1,8 +1,7 @@
 package systemtests
 
 import (
-	"testing"
-	//"bytes"
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -13,7 +12,15 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"testing"
 )
+
+// Break out into separate package to avoid duplication and mismatch
+type Employee struct {
+	Id        int
+	FirstName string
+	LastName  string
+}
 
 func Test(t *testing.T) { TestingT(t) }
 
@@ -85,6 +92,33 @@ func (s *EmployeeSuite) TestEmployeeBasicGETNoNoEmployee(c *C) {
 
 	c.Assert(err, IsNil)
 	c.Assert(resp.StatusCode, Equals, http.StatusNotFound, Commentf("Expected status 200 for basic GET employee", 200, resp.StatusCode))
+
+	b, err := ioutil.ReadAll(resp.Body)
+
+	c.Assert(err, IsNil)
+	c.Assert(strings.Contains(resp.Header["Content-Type"][0], "text/plain"), Equals, true)
+	c.Assert(strings.TrimSpace(string(b)), Equals, "Employee not found")
+}
+
+func (s *EmployeeSuite) TestEmployeeBasicCreateEmployee(c *C) {
+
+	empl := &Employee{
+		Id:        0,
+		FirstName: "A first name",
+		LastName:  "A Last name",
+	}
+
+	body, err := json.Marshal(empl)
+	c.Assert(err, IsNil)
+
+	client := &http.Client{}
+
+	uri := getBaseURI() + "/employee"
+	req, err := http.NewRequest("POST", uri, bytes.NewReader(body))
+	resp, err := client.Do(req)
+
+	c.Assert(err, IsNil)
+	c.Assert(resp.StatusCode, Equals, http.StatusOK, Commentf("Expected status 200 for basic POST to create employee", 200, resp.StatusCode))
 
 	b, err := ioutil.ReadAll(resp.Body)
 

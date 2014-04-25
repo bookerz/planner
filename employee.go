@@ -84,7 +84,7 @@ func (e *Employee) Save(tx Transaction) error {
 }
 
 func (e *Employee) Insert(tx Transaction) error {
-	err := tx.QueryRow("INSERT INTO employee (id,first_name,last_name) = (nextval('employee_seq'),$1,$2) returning id", e.FirstName, e.LastName).Scan(e.Id)
+	err := tx.QueryRow("INSERT INTO employee (id,first_name,last_name) values (nextval('employee_seq'),$1,$2) returning id", e.FirstName, e.LastName).Scan(&e.Id)
 
 	if err != nil {
 		log.Warningf("[EMPLOYEE]: Unable to save employee '%v', error: '%v'", e.Id, err)
