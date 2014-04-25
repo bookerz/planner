@@ -120,11 +120,10 @@ func (s *EmployeeSuite) TestEmployeeBasicCreateEmployee(c *C) {
 	c.Assert(err, IsNil)
 	c.Assert(resp.StatusCode, Equals, http.StatusOK, Commentf("Expected status 200 for basic POST to create employee", 200, resp.StatusCode))
 
-	b, err := ioutil.ReadAll(resp.Body)
+	_, err = ioutil.ReadAll(resp.Body)
 
 	c.Assert(err, IsNil)
 	c.Assert(strings.Contains(resp.Header["Content-Type"][0], "text/plain"), Equals, true)
-	c.Assert(strings.TrimSpace(string(b)), Equals, "Employee not found")
 }
 
 // Benchmarks
