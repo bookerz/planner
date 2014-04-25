@@ -184,6 +184,8 @@ func EmployeeHandler(w http.ResponseWriter, r *http.Request, tx Transaction, var
 		return err
 	}
 
+	log.V(INFO).Infof("Employee id '%v'", id)
+
 	e := &Employee{
 		Id: id,
 	}

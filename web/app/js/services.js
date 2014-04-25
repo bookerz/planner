@@ -14,3 +14,10 @@ employeeService.factory('Employees', ['$resource',
       query: {method:'GET', params:{}, isArray:false}
     });
   }]);
+
+employeeService.factory('Employee', ['$resource',
+  function($resource){
+    return $resource('/data/employee/101', {}, {
+      query: {method:'GET', params:{}, isArray:false}
+    });
+  }]);

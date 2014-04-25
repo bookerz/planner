@@ -11,4 +11,7 @@ angular.module('plannerApp.controllers', []).
   }])
   .controller('EmployeeListCtrl', ['$scope', 'Employees', function($scope, Employees) {
   	$scope.employees = Employees.query();
+  }])
+  .controller('EmployeeCtrl', ['$scope', 'Employee', function($scope, Employee) {
+  	$scope.employee = Employee.query();
   }]);
