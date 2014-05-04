@@ -7,8 +7,6 @@ mkdir /tmp/planner_logs
 
 OS=`uname`
 
-echo $OS
-
 function act_on_event {
        file=$1
        if [[ $file == *.go ]]; then
@@ -26,7 +24,13 @@ function act_on_event {
        fi
 }
 
-inotifywait -m --timefmt '%d/%m/%y %H:%M' --format '%T %w %f' \
- -e moved_to . | while read date time dir file; do
-       act_on_event $file        
-done
+if [[ $OS == "Linux" ]]; then
+       inotifywait -m --timefmt '%d/%m/%y %H:%M' --format '%T %w %f' \
+              -e moved_to . | while read date time dir file; do
+              act_on_event $file
+       done
+fi
+
+if [[ $OS == "D" ]]; then
+       echo "TODO: Implement on Mac"
+fi
