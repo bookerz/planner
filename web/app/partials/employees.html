@@ -6,6 +6,12 @@
       			<th> </th>
     		</tr>
   		</thead>
+      <div class="col-md-2">
+        <!--Sidebar content-->
+
+        Search: <input ng-model="query">
+
+      </div>
   		<tbody>
     		<tr ng-repeat='employee in employees.Employees | filter:query'>
       			<td>{{employee.FirstName}} {{employee.LastName}}</td>
