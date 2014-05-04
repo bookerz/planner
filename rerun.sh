@@ -31,6 +31,6 @@ if [[ $OS == "Linux" ]]; then
        done
 fi
 
-if [[ $OS == "D" ]]; then
+if [[ $OS == "Darwin" ]]; then
        echo "TODO: Implement on Mac"
 fi
