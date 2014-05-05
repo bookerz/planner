@@ -32,5 +32,5 @@ if [[ $OS == "Linux" ]]; then
 fi
 
 if [[ $OS == "Darwin" ]]; then
-       echo "TODO: Implement on Mac"
+       fswatch 
 fi

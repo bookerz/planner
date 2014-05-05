@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"testing"
+	//"testing"
 	//"encoding/json"
 	//"fmt"
 	//"io/ioutil"
@@ -10,27 +10,27 @@ import (
 	. "launchpad.net/gocheck"
 )
 
-func Test(t *testing.T) { TestingT(t) }
+//func Test(t *testing.T) { TestingT(t) }
 
 type EmployeeSuite struct{}
 
 var _ = Suite(&EmployeeSuite{})
 
-type testResult struct {
+type testResultEmployee struct {
 	lastInsertId func() (int64, error)
 	rowsAffected func() (int64, error)
 }
 
-func (r testResult) LastInsertId() (int64, error) {
+func (r testResultEmployee) LastInsertId() (int64, error) {
 	return r.lastInsertId()
 }
 
-func (r testResult) RowsAffected() (int64, error) {
+func (r testResultEmployee) RowsAffected() (int64, error) {
 	return r.rowsAffected()
 }
 
-type testTransaction struct {
-	result      testResult
+type testTransactionEmployee struct {
+	result      testResultEmployee
 	execCnt     int
 	rollbackCnt int
 	queryRowCnt int
@@ -40,36 +40,36 @@ type testTransaction struct {
 	stmtCnt     int
 }
 
-func (m *testTransaction) Commit() error {
+func (m *testTransactionEmployee) Commit() error {
 	m.commitCnt += 1
 	return nil
 }
 
-func (m *testTransaction) Exec(query string, args ...interface{}) (sql.Result, error) {
+func (m *testTransactionEmployee) Exec(query string, args ...interface{}) (sql.Result, error) {
 	m.execCnt += 1
 	return m.result, nil
 }
 
-func (m *testTransaction) Prepare(query string) (*sql.Stmt, error) {
+func (m *testTransactionEmployee) Prepare(query string) (*sql.Stmt, error) {
 	m.prepareCnt += 1
 	return nil, nil
 }
-func (m *testTransaction) Query(query string, args ...interface{}) (*sql.Rows, error) {
+func (m *testTransactionEmployee) Query(query string, args ...interface{}) (*sql.Rows, error) {
 	m.queryCnt += 1
 	return nil, nil
 }
 
-func (m *testTransaction) QueryRow(query string, args ...interface{}) *sql.Row {
+func (m *testTransactionEmployee) QueryRow(query string, args ...interface{}) *sql.Row {
 	m.queryRowCnt += 1
 	return nil
 }
 
-func (m *testTransaction) Rollback() error {
+func (m *testTransactionEmployee) Rollback() error {
 	m.rollbackCnt += 1
 	return nil
 }
 
-func (m *testTransaction) Stmt(stmt *sql.Stmt) *sql.Stmt {
+func (m *testTransactionEmployee) Stmt(stmt *sql.Stmt) *sql.Stmt {
 	m.stmtCnt += 1
 	return nil
 }
@@ -77,7 +77,7 @@ func (m *testTransaction) Stmt(stmt *sql.Stmt) *sql.Stmt {
 func (s *EmployeeSuite) TestEmployeeDelete(c *C) {
 	e := &Employee{}
 
-	r := testResult{
+	r := testResultEmployee{
 		lastInsertId: func() (int64, error) {
 			return 1, nil
 		},
@@ -86,7 +86,7 @@ func (s *EmployeeSuite) TestEmployeeDelete(c *C) {
 		},
 	}
 
-	tx := &testTransaction{result: r}
+	tx := &testTransactionEmployee{result: r}
 
 	err := e.Delete(tx)
 

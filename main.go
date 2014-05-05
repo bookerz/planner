@@ -72,6 +72,12 @@ func main() {
 	r.GET("/data/employee/:id", RunInTransaction(EmployeeHandler))
 	r.GET("/data/employees", RunInTransaction(EmployeeListHandler))
 
+	r.POST("/data/customer", RunInTransaction(CustomerCreateHandler))
+	r.POST("/data/customer/:id", RunInTransaction(CustomerSaveHandler))
+	r.DELETE("/data/customer/:id", RunInTransaction(CustomerDeleteHandler))
+	r.GET("/data/customer/:id", RunInTransaction(CustomerHandler))
+	r.GET("/data/customers", RunInTransaction(CustomerListHandler))
+
 	http.Handle("/", r)
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
