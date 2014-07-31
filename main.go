@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	log "github.com/golang/glog"
+	"html/template"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -21,6 +22,8 @@ const (
 )
 
 var configFile string
+
+var indexTmpl *template.Template
 
 var db *sql.DB
 
@@ -50,6 +53,8 @@ func main() {
 
 	runtime.GOMAXPROCS(config.getConcurrency())
 
+	indexTmpl = template.Must(template.ParseFiles(config.getWebRoot() + "/templates/index.html"))
+
 	db, err = sql.Open("postgres", fmt.Sprintf("user=%v sslmode=disable", config.DBUser))
 
 	if err != nil {
@@ -62,7 +67,9 @@ func main() {
 	db.SetMaxIdleConns(config.getMaxIdleConns())
 	log.Infof("Setting max idle db connections to %v\n", config.getMaxIdleConns())
 
-	//http.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir(config.getWebRoot()))))
+	http.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir(config.getWebRoot()+"/js"))))
+	http.Handle("/css/", http.StripPrefix("/css/", http.FileServer(http.Dir(config.getWebRoot()+"/css"))))
+	http.Handle("/fonts/", http.StripPrefix("/fonts/", http.FileServer(http.Dir(config.getWebRoot()+"/fonts"))))
 
 	r := httprouter.New()
 
@@ -78,6 +85,8 @@ func main() {
 	r.GET("/data/customer/:id", RunInTransaction(CustomerHandler))
 	r.GET("/data/customers", RunInTransaction(CustomerListHandler))
 
+	r.GET("/", RunInTransaction(index))
+
 	http.Handle("/", r)
 
 	if err := http.ListenAndServe(":8080", nil); err != nil {
@@ -85,4 +94,11 @@ func main() {
 	}
 
 	log.Flush()
+}
+
+func index(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[string]string) error {
+
+	indexTmpl.Execute(w, nil)
+
+	return nil
 }
