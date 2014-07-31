@@ -98,7 +98,19 @@ func main() {
 
 func index(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[string]string) error {
 
-	indexTmpl.Execute(w, nil)
+	e := &EmployeeList{}
+
+	if err := e.Load(tx, 0, 40); err != nil {
+		log.Warningf("[MAIN]: Unable to load data from database, error: '%v'", err)
+		return err
+	}
+
+	err := indexTmpl.Execute(w, e.Employees)
+
+	if err != nil {
+		log.Warningf("[MAIN]: Unable to execute template for page 'index', error: '%v'", err)
+		return err
+	}
 
 	return nil
 }
