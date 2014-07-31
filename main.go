@@ -62,7 +62,7 @@ func main() {
 	db.SetMaxIdleConns(config.getMaxIdleConns())
 	log.Infof("Setting max idle db connections to %v\n", config.getMaxIdleConns())
 
-	http.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir(config.getWebRoot()))))
+	//http.Handle("/app/", http.StripPrefix("/app/", http.FileServer(http.Dir(config.getWebRoot()))))
 
 	r := httprouter.New()
 
