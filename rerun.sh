@@ -9,7 +9,7 @@ OS=`uname`
 
 function act_on_event {
        file=$1
-       if [[ $file == *.go ]]; then
+       if [[ $file == *.go || $file == *.html ]]; then
               echo $file
               FILECHANGE=${dir}${file}
               # convert absolute path to relative
@@ -25,7 +25,7 @@ function act_on_event {
 }
 
 if [[ $OS == "Linux" ]]; then
-       inotifywait -m --timefmt '%d/%m/%y %H:%M' --format '%T %w %f' \
+       inotifywait -m -r --timefmt '%d/%m/%y %H:%M' --format '%T %w %f' \
               -e moved_to . | while read date time dir file; do
               act_on_event $file
        done
