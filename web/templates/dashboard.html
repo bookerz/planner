@@ -1,0 +1,38 @@
+{{define "dashboard"}}
+<h1 class="page-header">Dashboard</h1>
+
+<div class="row placeholders">
+  <div class="col-md-6 placeholder">
+    <img data-src="holder.js/200x200/auto/sky" class="img-responsive" alt="Generic placeholder thumbnail">
+    <h4>Weekly completed</h4>
+    <span class="text-muted">Something else</span>
+  </div>
+  <div class="col-md-6 placeholder">
+    <img data-src="holder.js/200x200/auto/vine" class="img-responsive" alt="Generic placeholder thumbnail">
+    <h4>Monthly completed</h4>
+    <span class="text-muted">Something else</span>
+  </div>
+</div>
+
+<h2 class="sub-header">Remaining rounds this week</h2>
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Id</th>
+        <th>First name</th>
+        <th>Surname</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .}}
+      <tr>
+        <td>{{.Id}}</td>
+        <td>{{.FirstName}}</td>
+        <td>{{.LastName}}</td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}

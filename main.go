@@ -25,6 +25,8 @@ var configFile string
 
 var indexTmpl *template.Template
 
+var clientListTmpl *template.Template
+
 var db *sql.DB
 
 func init() {
@@ -53,7 +55,21 @@ func main() {
 
 	runtime.GOMAXPROCS(config.getConcurrency())
 
-	indexTmpl = template.Must(template.ParseFiles(config.getWebRoot() + "/templates/index.html"))
+	indexTmpl = template.Must(template.ParseFiles(
+		config.getWebRoot()+"/templates/index.html",
+		config.getWebRoot()+"/templates/navigation.html",
+		config.getWebRoot()+"/templates/head.html",
+		config.getWebRoot()+"/templates/leftmenu.html",
+		config.getWebRoot()+"/templates/dashboard.html",
+		config.getWebRoot()+"/templates/scripts.html"))
+
+	clientListTmpl = template.Must(template.ParseFiles(
+		config.getWebRoot()+"/templates/clients.html",
+		config.getWebRoot()+"/templates/navigation.html",
+		config.getWebRoot()+"/templates/head.html",
+		config.getWebRoot()+"/templates/leftmenu.html",
+		config.getWebRoot()+"/templates/clientlist.html",
+		config.getWebRoot()+"/templates/scripts.html"))
 
 	db, err = sql.Open("postgres", fmt.Sprintf("user=%v sslmode=disable", config.DBUser))
 
@@ -125,7 +141,7 @@ func clients(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[st
 		return err
 	}
 
-	err := indexTmpl.Execute(w, e.Customers)
+	err := clientListTmpl.Execute(w, e.Customers)
 
 	if err != nil {
 		log.Warningf("[MAIN]: Unable to execute template for page 'clients', error: '%v'", err)
