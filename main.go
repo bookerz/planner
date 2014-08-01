@@ -86,6 +86,7 @@ func main() {
 	r.GET("/data/customers", RunInTransaction(CustomerListHandler))
 
 	r.GET("/", RunInTransaction(index))
+	r.GET("/clients", RunInTransaction(clients))
 
 	http.Handle("/", r)
 
@@ -109,6 +110,25 @@ func index(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[stri
 
 	if err != nil {
 		log.Warningf("[MAIN]: Unable to execute template for page 'index', error: '%v'", err)
+		return err
+	}
+
+	return nil
+}
+
+func clients(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[string]string) error {
+
+	e := &CustomerList{}
+
+	if err := e.Load(tx, 0, 40); err != nil {
+		log.Warningf("[MAIN]: Unable to load data from database, error: '%v'", err)
+		return err
+	}
+
+	err := indexTmpl.Execute(w, e.Customers)
+
+	if err != nil {
+		log.Warningf("[MAIN]: Unable to execute template for page 'clients', error: '%v'", err)
 		return err
 	}
 
