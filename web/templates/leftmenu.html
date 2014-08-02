@@ -1,8 +1,24 @@
 {{define "leftmenu"}}
 <ul class="nav nav-sidebar">
-   	<li class="active"><a href="#">Overview</a></li>
-    <li><a href="#">Schedules</a></li>
-    <li><a href="/clients">Clients</a></li>
-	<li><a href="#">Employees</a></li>
+	{{if .IsOverview}}
+   		<li class="active"><a href="/">Overview</a></li>
+   	{{else}}
+   		<li><a href="/">Overview</a></li>
+   	{{end}}
+     {{if .IsSchema}}
+   		<li class="active"><a href="/schedules">Schedules</a></li>
+   	{{else}}
+   		<li><a href="/schedules">Schedules</a></li>
+   	{{end}}
+    {{if .IsClients}}
+   		<li class="active"><a href="/clients">Clients</a></li>
+   	{{else}}
+   		<li><a href="/clients">Clients</a></li>
+   	{{end}}
+   	{{if .IsEmployees}}
+   		<li class="active"><a href="/employees">Employees</a></li>
+   	{{else}}
+   		<li><a href="/employees">Employees</a></li>
+   	{{end}}
 </ul>
 {{end}}

@@ -28,6 +28,23 @@ func initWeb(config *Config) {
 		config.getWebRoot()+"/templates/scripts.html"))
 }
 
+type LeftNavState struct {
+	IsOverview  bool
+	IsSchema    bool
+	IsClients   bool
+	IsEmployees bool
+}
+
+type NavEmployeeList struct {
+	LeftNavState
+	Employees []*Employee
+}
+
+type NavCustomerList struct {
+	LeftNavState
+	Customers []*Customer
+}
+
 func index(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[string]string) error {
 
 	e := &EmployeeList{}
@@ -37,7 +54,16 @@ func index(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[stri
 		return err
 	}
 
-	err := indexTmpl.Execute(w, e.Employees)
+	lNav := LeftNavState{
+		IsOverview: true,
+	}
+
+	nav := NavEmployeeList{
+		LeftNavState: lNav,
+		Employees:    e.Employees,
+	}
+
+	err := indexTmpl.Execute(w, nav)
 
 	if err != nil {
 		log.Warningf("[MAIN]: Unable to execute template for page 'index', error: '%v'", err)
@@ -56,7 +82,16 @@ func clients(w http.ResponseWriter, r *http.Request, tx Transaction, vars map[st
 		return err
 	}
 
-	err := clientListTmpl.Execute(w, e.Customers)
+	lNav := LeftNavState{
+		IsClients: true,
+	}
+
+	nav := NavCustomerList{
+		LeftNavState: lNav,
+		Customers:    e.Customers,
+	}
+
+	err := clientListTmpl.Execute(w, nav)
 
 	if err != nil {
 		log.Warningf("[MAIN]: Unable to execute template for page 'clients', error: '%v'", err)
